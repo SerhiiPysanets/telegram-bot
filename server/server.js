@@ -38,7 +38,6 @@ bot.on('message', async msg => {
     const res = await axios('https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/2024-01-13/currencies/usd/uah.json').then(({ data }) => {
       return data
     }).catch((err) => console.log(err))
-    console.log(res)
     await bot.sendMessage(chatId,
       `${res?.date} UAH
        USD: ${res?.uah}`)
