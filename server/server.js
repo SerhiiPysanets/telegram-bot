@@ -23,24 +23,37 @@ const token = process.env.TG_TOKEN
 
 const bot = new TelegramApi(token, { polling: true })
 
+const getListCodeCurrencies = await axios('https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies.min.json').then(({ data }) => {
+  return data
+}).catch((err) => console.log(err))
+
+const listCodeCurrencies = Object.keys(getListCodeCurrencies)
+
+console.log(listCodeCurrencies.length)
+
 bot.on('message', async msg => {
-  const text = msg.text
+  const text = msg.text.toLowerCase()
   const chatId = msg.chat.id
-  console.log(msg)
+
 
   if (text === "/start") {
-    await bot.sendMessage(chatId, 'Hi! This is bot')
+    await bot.sendMessage(chatId,
+    `Hi! This is bot.
+    Features:
+      150+ Currencies, Including common cryptocurrencies,
+      Daily rate updated`)
   }
   if (text === "/info") {
    await bot.sendMessage(chatId, `${msg?.chat?.username}`)
   }
-  if (text === '/usd') {
-    const res = await axios('https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/2024-01-13/currencies/usd/uah.json').then(({ data }) => {
+  if (listCodeCurrencies.includes(text)) {
+    const url = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/${text}/uah.min.json`
+    const res = await axios(url).then(({ data }) => {
       return data
     }).catch((err) => console.log(err))
     await bot.sendMessage(chatId,
       `${res?.date} UAH
-       USD: ${res?.uah}`)
+       ${text.toUpperCase()}: ${res?.uah}`)
 
   }
 })
