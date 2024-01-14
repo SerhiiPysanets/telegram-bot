@@ -60,9 +60,28 @@ bot.on('message', async msg => {
   if (listCodeCurrencies.includes(text)) {
     const formatCurrentData = formatDate(currentDate)
     const url = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/${formatCurrentData}/currencies/${text}/uah.min.json`
+    const url1 = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/${formatCurrentData}/currencies/${text}/uah.json`
+    const url2 = `https://raw.githubusercontent.com/fawazahmed0/currency-api/1/latest/currencies/${text}/uah.min.json`
     const res = await axios(url).then(({ data }) => {
       return data
-    }).catch((err) => console.log(err))
+    }).catch((err) => console.log(err)).then((obj) => {
+      if (!obj) {
+        const newRes = axios(url1).then(({ data }) => {
+          return data
+        }).catch((err) => console.log(err)).then((dataObj) => {
+          if (!dataObj) {
+            const newRes = axios(url2).then(({ data }) => {
+              return data
+            }).catch((err) => console.log(err))
+            return newRes
+          }
+          return dataObj
+        })
+        return newRes
+      }
+      return obj
+    })
+
     return  bot.sendMessage(chatId,
       `${res?.date} UAH
        ${text.toUpperCase()}: ${res?.uah}`)
