@@ -45,23 +45,42 @@ console.log(formatDate(currentDate))
 bot.on('message', async msg => {
   const text = msg.text.toLowerCase()
   const chatId = msg.chat.id
+  const arrText = text.split('_')
+  const textDate = arrText[2] ? `${arrText[2]}-${arrText[3]}-${arrText[4]}`: formatDate(currentDate)
+  const pattern = /^202[2-4]-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
+  const currency1 = arrText[0].slice(1)
+  const currency2 = arrText[1] || 'uah'
+  const newArrText = [currency1, currency2, textDate]
 
+
+  if (!pattern.test(textDate)) {
+    await bot.sendSticker(chatId, 'https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/21.webp')
+    return bot.sendMessage(chatId, `Invalid date`)
+  }
 
   if (text === "/start") {
+    await bot.sendSticker(chatId, 'https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/24.webp')
     return bot.sendMessage(chatId,
-    `Hi! This is bot.
-    Features:
-      150+ Currencies, Including common cryptocurrencies,
-      Daily rate updated`)
+      `Hi! ${msg?.chat?.username }
+      To find out the exchange rate Just write the currency code
+      For example: /usd
+      or: /usd_eur
+      or: /btc_usd_2023_08_14
+    `)
   }
   if (text === "/info") {
-   return bot.sendMessage(chatId, `${msg?.chat?.username}`)
+    return bot.sendMessage(chatId, `Features:
+      150+ Currencies, including common cryptocurrencies,
+      Exchange rate history for the last six months
+      Daily rate updated`)
   }
-  if (listCodeCurrencies.includes(text)) {
-    const formatCurrentData = formatDate(currentDate)
-    const url = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/${formatCurrentData}/currencies/${text}/uah.min.json`
-    const url1 = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/${formatCurrentData}/currencies/${text}/uah.json`
-    const url2 = `https://raw.githubusercontent.com/fawazahmed0/currency-api/1/latest/currencies/${text}/uah.min.json`
+
+  if (listCodeCurrencies.includes(newArrText[0]) && listCodeCurrencies.includes(newArrText[1]) ) {
+
+    const url = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/${newArrText[2]}/currencies/${newArrText[0]}/${newArrText[1]}.min.json`
+    const url1 = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/${newArrText[2]}/currencies/${newArrText[0]}/${newArrText[1]}.json`
+    const url2 = `https://raw.githubusercontent.com/fawazahmed0/currency-api/1/latest/currencies/${newArrText[0]}/${newArrText[1]}.min.json`
+
     const res = await axios(url).then(({ data }) => {
       return data
     }).catch((err) => console.log(err)).then((obj) => {
@@ -83,11 +102,12 @@ bot.on('message', async msg => {
     })
 
     return  bot.sendMessage(chatId,
-      `${res?.date} UAH
-       ${text.toUpperCase()}: ${res?.uah}`)
+      `${res?.date}
+       ${newArrText[0].toUpperCase()} - ${newArrText[1].toUpperCase()}: ${res[newArrText[1]]}`)
 
   }
-  return bot.sendSticker(chatId,'https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/19.webp')
+  await bot.sendSticker(chatId, 'https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/19.webp')
+  return bot.sendMessage(chatId, `try again`)
 
 })
 
