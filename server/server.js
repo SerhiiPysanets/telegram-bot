@@ -23,13 +23,24 @@ const token = process.env.TG_TOKEN
 
 const bot = new TelegramApi(token, { polling: true })
 
+const currentDate = new Date()
+
+const formatDate = (date) => {
+
+  const year = date.getFullYear()
+  const month = (date.getMonth() + 1).toString().padStart(2, '0')
+  const day = date.getDate().toString().padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
 const getListCodeCurrencies = await axios('https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies.min.json').then(({ data }) => {
   return data
 }).catch((err) => console.log(err))
 
 const listCodeCurrencies = Object.keys(getListCodeCurrencies)
 
-console.log(listCodeCurrencies.length)
+console.log(formatDate(currentDate))
 
 bot.on('message', async msg => {
   const text = msg.text.toLowerCase()
@@ -37,25 +48,28 @@ bot.on('message', async msg => {
 
 
   if (text === "/start") {
-    await bot.sendMessage(chatId,
+    return bot.sendMessage(chatId,
     `Hi! This is bot.
     Features:
       150+ Currencies, Including common cryptocurrencies,
       Daily rate updated`)
   }
   if (text === "/info") {
-   await bot.sendMessage(chatId, `${msg?.chat?.username}`)
+   return bot.sendMessage(chatId, `${msg?.chat?.username}`)
   }
   if (listCodeCurrencies.includes(text)) {
-    const url = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/${text}/uah.min.json`
+    const formatCurrentData = formatDate(currentDate)
+    const url = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/${formatCurrentData}/currencies/${text}/uah.min.json`
     const res = await axios(url).then(({ data }) => {
       return data
     }).catch((err) => console.log(err))
-    await bot.sendMessage(chatId,
+    return  bot.sendMessage(chatId,
       `${res?.date} UAH
        ${text.toUpperCase()}: ${res?.uah}`)
 
   }
+  return bot.sendSticker(chatId,'https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/19.webp')
+
 })
 
 
