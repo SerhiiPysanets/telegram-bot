@@ -23,37 +23,24 @@ const token = process.env.TG_TOKEN
 
 const bot = new TelegramApi(token, { polling: true })
 
-const currentDate = new Date()
-
-const formatDate = (date) => {
-
-  const year = date.getFullYear()
-  const month = (date.getMonth() + 1).toString().padStart(2, '0')
-  const day = date.getDate().toString().padStart(2, '0')
-
-  return `${year}-${month}-${day}`
-}
-
 const getListCodeCurrencies = await axios('https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies.min.json').then(({ data }) => {
   return data
 }).catch((err) => console.log(err))
 
 const listCodeCurrencies = Object.keys(getListCodeCurrencies)
 
-console.log(formatDate(currentDate))
-
 bot.on('message', async msg => {
   const text = msg.text.toLowerCase()
   const chatId = msg.chat.id
   const arrText = text.split('_')
-  const textDate = arrText[2] ? `${arrText[2]}-${arrText[3]}-${arrText[4]}`: formatDate(currentDate)
+  const textDate = arrText[2] ? `${arrText[2]}-${arrText[3]}-${arrText[4]}` : 'latest'
   const pattern = /^202[2-4]-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
+
   const currency1 = arrText[0].slice(1)
   const currency2 = arrText[1] || 'uah'
   const newArrText = [currency1, currency2, textDate]
 
-
-  if (!pattern.test(textDate)) {
+  if (textDate !== 'latest' && !pattern.test(textDate)) {
     await bot.sendSticker(chatId, 'https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/21.webp')
     return bot.sendMessage(chatId, `Invalid date`)
   }
@@ -77,9 +64,10 @@ bot.on('message', async msg => {
 
   if (listCodeCurrencies.includes(newArrText[0]) && listCodeCurrencies.includes(newArrText[1]) ) {
 
-    const url = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/${newArrText[2]}/currencies/${newArrText[0]}/${newArrText[1]}.min.json`
-    const url1 = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/${newArrText[2]}/currencies/${newArrText[0]}/${newArrText[1]}.json`
-    const url2 = `https://raw.githubusercontent.com/fawazahmed0/currency-api/1/latest/currencies/${newArrText[0]}/${newArrText[1]}.min.json`
+    const url = `https://raw.githubusercontent.com/fawazahmed0/currency-api/1/${newArrText[2]}/currencies/${newArrText[0]}/${newArrText[1]}.min.json`
+    const url1 = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/${newArrText[2]}/currencies/${newArrText[0]}/${newArrText[1]}.min.json`
+    const url2 = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/${newArrText[0]}/${newArrText[1]}.json`
+
 
     const res = await axios(url).then(({ data }) => {
       return data
@@ -107,7 +95,7 @@ bot.on('message', async msg => {
 
   }
   await bot.sendSticker(chatId, 'https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/19.webp')
-  return bot.sendMessage(chatId, `try again`)
+  return bot.sendMessage(chatId, `Incorrect currency code`)
 
 })
 
