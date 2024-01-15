@@ -81,7 +81,7 @@ bot.on('message', async msg => {
     ]
     const randomNumber = Math.floor(Math.random() * 10)
 
-    await bot.sendSticker(chatId, `${arrStick[randomNumber]}`)
+    return bot.sendSticker(chatId, `${arrStick[randomNumber]}`)
   }
 
   if (text === "/start") {
