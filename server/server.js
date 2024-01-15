@@ -29,18 +29,38 @@ const getListCodeCurrencies = await axios('https://cdn.jsdelivr.net/gh/fawazahme
 
 const listCodeCurrencies = Object.keys(getListCodeCurrencies)
 
+const currencyCodesOptions = {
+
+  reply_markup: JSON.stringify({
+    inline_keyboard: [
+      [{ text: "A", callback_data: "a" }, { text: "B", callback_data: "b" }, { text: "C", callback_data: "c" }, { text: "D", callback_data: "d" }, { text: "E", callback_data: "e" },{ text: "F", callback_data: "f" }],
+      [{ text: "G", callback_data: "g" }, { text: "H", callback_data: "h" }, { text: "I", callback_data: "i" }, { text: "J", callback_data: "j" }, { text: "K", callback_data: "k" }, { text: "L", callback_data: "l" }],
+      [{ text: "M", callback_data: "m" }, { text: "N", callback_data: "n" }, { text: "O", callback_data: "o" }, { text: "P", callback_data: "p" }, { text: "Q", callback_data: "q" }, { text: "R", callback_data: "r" }],
+      [{ text: "S", callback_data: "s" }, { text: "T", callback_data: "t" }, { text: "U", callback_data: "u" }, { text: "V", callback_data: "v" }, { text: "W", callback_data: "w" }, { text: "X", callback_data: "x" }],
+      [{ text: "Y", callback_data: "y" }, { text: "Z", callback_data: "z" }],
+    ],
+  })
+}
+
+bot.setMyCommands([
+  { command: "/start", description: "initial command" },
+  { command: "/info", description: "description of capabilities" },
+  { command: "/help", description: "currency codes" }
+
+])
+
 bot.on('message', async msg => {
   const text = msg.text.toLowerCase()
   const chatId = msg.chat.id
   const arrText = text.split('_')
   const textDate = arrText[2] ? `${arrText[2]}-${arrText[3]}-${arrText[4]}` : 'latest'
-  const pattern = /^202[2-4]-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
+  const regexp = /^202[2-4]-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
 
   const currency1 = arrText[0].slice(1)
   const currency2 = arrText[1] || 'uah'
   const newArrText = [currency1, currency2, textDate]
 
-  if (textDate !== 'latest' && !pattern.test(textDate)) {
+  if (textDate !== 'latest' && !regexp.test(textDate)) {
     await bot.sendSticker(chatId, 'https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/21.webp')
     return bot.sendMessage(chatId, `Invalid date`)
   }
@@ -59,7 +79,16 @@ bot.on('message', async msg => {
     return bot.sendMessage(chatId, `Features:
       150+ Currencies, including common cryptocurrencies,
       Exchange rate history for the last six months
-      Daily rate updated`)
+      Daily rate updated
+      Exemple comand:
+      /eur  - will show the euro to Ukrainian hryvnia exchange rate
+      /usd_eur - will show the dollar to euro exchange rate
+      /btc_usd_2024_01_10 -will show the bitcoin to dollar rate on January 10, 24`)
+  }
+  if (text === "/help") {
+
+    return bot.sendMessage(chatId, `Select the first letter for the currency code`, currencyCodesOptions)
+
   }
 
   if (listCodeCurrencies.includes(newArrText[0]) && listCodeCurrencies.includes(newArrText[1]) ) {
@@ -96,6 +125,21 @@ bot.on('message', async msg => {
   }
   await bot.sendSticker(chatId, 'https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/19.webp')
   return bot.sendMessage(chatId, `Incorrect currency code`)
+
+})
+
+bot.on('callback_query', async(msg) => {
+  const data = msg.data
+  const chatId = msg.message.chat.id
+
+  const listCode = listCodeCurrencies.reduce((acc, rec) => {
+    if (rec[0] === data) {
+      return acc + `/${rec} --- ${getListCodeCurrencies[rec]} \n`
+    }
+    return acc
+  }, ``)
+
+  return bot.sendMessage(chatId, `${listCode}`)
 
 })
 
