@@ -145,7 +145,7 @@ bot.on('message', async msg => {
 
     return  bot.sendMessage(chatId,
       `${res?.date}
-       ${newArrText[0].toUpperCase()} - ${newArrText[1].toUpperCase()}: ${res[newArrText[1]]}`, currencyCodesO)
+       ${newArrText[0].toUpperCase()} - ${newArrText[1].toUpperCase()}: ${res[newArrText[1]]}`)
 
   }
   await bot.sendSticker(chatId, 'https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/19.webp')
