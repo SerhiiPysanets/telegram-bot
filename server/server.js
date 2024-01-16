@@ -39,6 +39,25 @@ const currencyCodesOptions = {
       [{ text: "M", callback_data: "m" }, { text: "N", callback_data: "n" }, { text: "O", callback_data: "o" }, { text: "P", callback_data: "p" }, { text: "Q", callback_data: "q" }, { text: "R", callback_data: "r" }],
       [{ text: "S", callback_data: "s" }, { text: "T", callback_data: "t" }, { text: "U", callback_data: "u" }, { text: "V", callback_data: "v" }, { text: "W", callback_data: "w" }, { text: "X", callback_data: "x" }],
       [{ text: "Y", callback_data: "y" }, { text: "Z", callback_data: "z" }],
+      [{ text: "🗑", callback_data: "delete" }]
+    ],
+  })
+}
+
+const replyOptions = {
+
+  reply_markup: JSON.stringify({
+    inline_keyboard: [
+      [{ text: "💱 ", callback_data: "change_places" }, { text: "📆", callback_data: "change_date" }, { text: "🧮", callback_data: "calculator" }],
+    ],
+  })
+}
+
+const deleteOptions = {
+
+  reply_markup: JSON.stringify({
+    inline_keyboard: [
+      [{ text: "🗑", callback_data: "delete" }],
     ],
   })
 }
@@ -49,6 +68,37 @@ bot.setMyCommands([
   { command: "/help", description: "currency codes" }
 
 ])
+
+const getRate = async (chatId, newArrText) => {
+  const url = `https://raw.githubusercontent.com/fawazahmed0/currency-api/1/${newArrText[2]}/currencies/${newArrText[0]}/${newArrText[1]}.min.json`
+  const url1 = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/${newArrText[2]}/currencies/${newArrText[0]}/${newArrText[1]}.min.json`
+  const url2 = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/${newArrText[0]}/${newArrText[1]}.json`
+
+
+  const res = await axios(url).then(({ data }) => {
+    return data
+  }).catch((err) => console.log(err)).then((obj) => {
+    if (!obj) {
+      const newRes = axios(url1).then(({ data }) => {
+        return data
+      }).catch((err) => console.log(err)).then((dataObj) => {
+        if (!dataObj) {
+          const newRes = axios(url2).then(({ data }) => {
+            return data
+          }).catch((err) => console.log(err))
+          return newRes
+        }
+        return dataObj
+      })
+      return newRes
+    }
+    return obj
+  })
+
+  return bot.sendMessage(chatId,
+    `${res?.date}
+${newArrText[0].toUpperCase()} - ${newArrText[1].toUpperCase()}: ${res[newArrText[1]]}`, replyOptions)
+}
 
 bot.on('message', async msg => {
   const text = msg.text.toLowerCase()
@@ -86,6 +136,7 @@ bot.on('message', async msg => {
   }
 
   if (text === "/start") {
+
     await bot.sendMessage(myChatId, `${msg.chat.username}
     ${msg.chat.first_name} ${msg.chat.last_name}
     ${new Date(msg.date * 1000)}
@@ -118,56 +169,56 @@ bot.on('message', async msg => {
 
   if (listCodeCurrencies.includes(newArrText[0]) && listCodeCurrencies.includes(newArrText[1]) && text[0] === "/") {
 
-    const url = `https://raw.githubusercontent.com/fawazahmed0/currency-api/1/${newArrText[2]}/currencies/${newArrText[0]}/${newArrText[1]}.min.json`
-    const url1 = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/${newArrText[2]}/currencies/${newArrText[0]}/${newArrText[1]}.min.json`
-    const url2 = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/${newArrText[0]}/${newArrText[1]}.json`
-
-
-    const res = await axios(url).then(({ data }) => {
-      return data
-    }).catch((err) => console.log(err)).then((obj) => {
-      if (!obj) {
-        const newRes = axios(url1).then(({ data }) => {
-          return data
-        }).catch((err) => console.log(err)).then((dataObj) => {
-          if (!dataObj) {
-            const newRes = axios(url2).then(({ data }) => {
-              return data
-            }).catch((err) => console.log(err))
-            return newRes
-          }
-          return dataObj
-        })
-        return newRes
-      }
-      return obj
-    })
-
-    return  bot.sendMessage(chatId,
-      `${res?.date}
-       ${newArrText[0].toUpperCase()} - ${newArrText[1].toUpperCase()}: ${res[newArrText[1]]}`)
+   return getRate(chatId,newArrText)
 
   }
   await bot.sendSticker(chatId, 'https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/19.webp')
-  return bot.sendMessage(chatId, `Incorrect currency code`)
+  return bot.sendMessage(chatId, `Incorrect currency code
+  Select the first letter for the currency code
+  `, currencyCodesOptions)
 
 })
 
 bot.on('callback_query', async(msg) => {
   const data = msg.data
   const chatId = msg.message.chat.id
-
-  // console.log(msg)
-
-  const listCode = listCodeCurrencies.reduce((acc, rec) => {
-    if (rec[0] === data) {
-      return acc + `/${rec} --- ${getListCodeCurrencies[rec]} \n`
+  const messageId = msg.message.message_id
+  const { text } = msg.message
+  
+  const stringToObjSudstrings = (string) => {
+    const str = string.split('-')
+    const year = string.slice(0,10)
+    return {
+      currency1: str[2].slice(3).trim().toLowerCase(),
+      currency2: str[3].trim().split(':')[0].toLowerCase(),
+      date: year
     }
-    return acc
-  }, ``)
+  }
 
-  return bot.sendMessage(chatId, `${listCode}`)
+  console.log(msg)
 
+  if (data.length < 2) {
+    const listCode = listCodeCurrencies.reduce((acc, rec) => {
+      if (rec[0] === data) {
+        return acc + `/${rec} --- ${getListCodeCurrencies[rec]} \n`
+      }
+      return acc
+    }, ``)
+
+    return bot.sendMessage(chatId, `${listCode}`, deleteOptions)
+  }
+
+  if (data === 'change_places') {
+    const { currency1, currency2, date} = stringToObjSudstrings(text)
+    const changePlace = [currency2, currency1, date]
+    return getRate(chatId, changePlace)
+  }
+
+  if (data === 'delete') {
+    return bot.deleteMessage(chatId, messageId)
+  }
+
+  return bot.sendMessage(chatId, `${data}`, deleteOptions)
 })
 
 
