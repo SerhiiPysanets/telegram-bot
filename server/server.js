@@ -60,6 +60,8 @@ bot.on('message', async msg => {
   const currency2 = arrText[1] || 'uah'
   const newArrText = [currency1, currency2, textDate]
 
+  console.log(new Date(1705391101000), msg)
+
   if (textDate !== 'latest' && !regexp.test(textDate)) {
     await bot.sendSticker(chatId, 'https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/21.webp')
     return bot.sendMessage(chatId, `Invalid date`)
@@ -110,7 +112,7 @@ bot.on('message', async msg => {
 
   }
 
-  if (listCodeCurrencies.includes(newArrText[0]) && listCodeCurrencies.includes(newArrText[1]) ) {
+  if (listCodeCurrencies.includes(newArrText[0]) && listCodeCurrencies.includes(newArrText[1]) && text[0] === "/") {
 
     const url = `https://raw.githubusercontent.com/fawazahmed0/currency-api/1/${newArrText[2]}/currencies/${newArrText[0]}/${newArrText[1]}.min.json`
     const url1 = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/${newArrText[2]}/currencies/${newArrText[0]}/${newArrText[1]}.min.json`
@@ -150,6 +152,8 @@ bot.on('message', async msg => {
 bot.on('callback_query', async(msg) => {
   const data = msg.data
   const chatId = msg.message.chat.id
+
+  console.log(msg)
 
   const listCode = listCodeCurrencies.reduce((acc, rec) => {
     if (rec[0] === data) {
