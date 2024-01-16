@@ -20,6 +20,7 @@ const middlewere = [
 ]
 
 const token = process.env.TG_TOKEN
+const myChatId = process.env.CHAT_ID
 
 const bot = new TelegramApi(token, { polling: true })
 
@@ -60,8 +61,6 @@ bot.on('message', async msg => {
   const currency2 = arrText[1] || 'uah'
   const newArrText = [currency1, currency2, textDate]
 
-  console.log(new Date(1705391101000), msg)
-
   if (textDate !== 'latest' && !regexp.test(textDate)) {
     await bot.sendSticker(chatId, 'https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/21.webp')
     return bot.sendMessage(chatId, `Invalid date`)
@@ -87,6 +86,11 @@ bot.on('message', async msg => {
   }
 
   if (text === "/start") {
+    await bot.sendMessage(myChatId, `${msg.chat.username}
+    ${msg.chat.first_name} ${msg.chat.last_name}
+    ${new Date(msg.date * 1000)}
+    ${msg.from.language_code}`)
+
     await bot.sendSticker(chatId, 'https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/24.webp')
     return bot.sendMessage(chatId,
       `Hi! ${msg?.chat?.username }
@@ -141,7 +145,7 @@ bot.on('message', async msg => {
 
     return  bot.sendMessage(chatId,
       `${res?.date}
-       ${newArrText[0].toUpperCase()} - ${newArrText[1].toUpperCase()}: ${res[newArrText[1]]}`)
+       ${newArrText[0].toUpperCase()} - ${newArrText[1].toUpperCase()}: ${res[newArrText[1]]}`, currencyCodesO)
 
   }
   await bot.sendSticker(chatId, 'https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/19.webp')
@@ -153,7 +157,7 @@ bot.on('callback_query', async(msg) => {
   const data = msg.data
   const chatId = msg.message.chat.id
 
-  console.log(msg)
+  // console.log(msg)
 
   const listCode = listCodeCurrencies.reduce((acc, rec) => {
     if (rec[0] === data) {
