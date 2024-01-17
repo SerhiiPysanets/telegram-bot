@@ -7,7 +7,7 @@ import TelegramApi from 'node-telegram-bot-api'
 import axios from 'axios'
 
 import { Html } from '../client/html.js'
-import { currencyCodesOptions, replyOptions, deleteOptions, arrStick } from './options.js'
+import { currencyCodesOptions, replyOptions, deleteOptions, arrStick, buttonDelete, inlineKeyboardForDate } from './options.js'
 import { getRateFromApi } from './commonFunk.js'
 
 const server = express()
@@ -110,8 +110,8 @@ bot.on('message', async msg => {
   }
 
   await bot.sendSticker(chatId, 'https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/19.webp')
-  return await bot.sendMessage(chatId, `Incorrect currency code
-  Select the first letter for the currency code
+  return await bot.sendMessage(chatId, `Invalid command or currency code
+Select the first letter for the currency code
   `, currencyCodesOptions)
 
 })
@@ -121,7 +121,13 @@ bot.on('callback_query', async(msg) => {
   const chatId = msg.message.chat.id
   const messageId = msg.message.message_id
   const { text } = msg.message
+  const { date } = msg.message
+  const currentDate = new Date(date * 1000)
+
   const regexp = /^[a-z]$/
+  const regexpYear = /^\d{4}$/
+  const regexpMonth = /^\d{2}m$/
+  const regexpDay = /^\d{2}$/
 
   const stringToObjSudstrings = (string) => {
     const str = string.split('-')
@@ -133,9 +139,10 @@ bot.on('callback_query', async(msg) => {
     }
   }
 
-  console.log(msg)
+  console.log(msg, currentDate)
 
   if (regexp.test(data)) {
+
     const listCode = listCodeCurrencies.reduce((acc, rec) => {
       if (rec[0] === data) {
         return acc + `/${rec} --- ${getListCodeCurrencies[rec]} \n`
@@ -147,12 +154,97 @@ bot.on('callback_query', async(msg) => {
   }
 
   if (data === 'change_places') {
+
     const { currency1, currency2, date} = stringToObjSudstrings(text)
     const changePlace = [currency2, currency1, date]
     return getRate(chatId, changePlace)
   }
 
+  if (data === 'change_date') {
+
+    const currentYear = currentDate.getFullYear()
+    const option = {
+      reply_markup: JSON.stringify({
+        inline_keyboard: [
+          [{ text: `${currentYear - 1}`, callback_data: `${currentYear - 1}` },
+            { text: `${currentYear}`, callback_data: `${currentYear}` }],
+          buttonDelete
+        ]
+      })
+    }
+    return await bot.sendMessage(chatId, 'Select year', { reply_to_message_id: messageId, ...option })
+  }
+
+  if (regexpYear.test(data)) {
+
+    const keyboard = inlineKeyboardForDate(12,4,'m')
+
+    const optionChoseMonth = {
+
+      reply_markup: JSON.stringify({
+        inline_keyboard: [...keyboard, buttonDelete]
+      })
+    }
+
+    await bot.deleteMessage(chatId, messageId)
+    return await bot.sendMessage(chatId,
+      `You chose ${data}
+Select month`, { reply_to_message_id: msg.message.reply_to_message.message_id, ...optionChoseMonth })
+  }
+
+  if (regexpMonth.test(data)) {
+
+    const newMessage = text.slice(0, 14)
+    const year = newMessage.slice(-4)
+
+    const daysInMonth = {
+      "01m": 31,
+      "02m": (2024 - year) % 4 === 0 ? 29 : 28,
+      "03m": 31,
+      "04m": 30,
+      "05m": 31,
+      "06m": 30,
+      "07m": 31,
+      "08m": 31,
+      "09m": 30,
+      "10m": 31,
+      "11m": 30,
+      "12m": 31
+    }
+
+    const keyboard = inlineKeyboardForDate(daysInMonth[data], 7)
+
+    const optionChoseDay = {
+      reply_markup: JSON.stringify({
+        inline_keyboard: [...keyboard, buttonDelete]
+      })
+    }
+    await bot.deleteMessage(chatId, messageId)
+    return await bot.sendMessage(chatId, `${newMessage}-${data.slice(0,2)}
+Select day`, { reply_to_message_id: msg.message.reply_to_message.message_id, ...optionChoseDay })
+
+  }
+
+  if (regexpDay.test(data)) {
+
+    const newDate = `${text.slice(10, 17)}-${data}`
+    const { currency1, currency2 } = stringToObjSudstrings(msg.message.reply_to_message.text)
+    const changeDate = [currency1, currency2, newDate]
+    await bot.deleteMessage(chatId, messageId)
+    await bot.sendMessage(chatId, `You changed the date to ${newDate}`, { reply_to_message_id: msg.message.reply_to_message.message_id})
+    return getRate(chatId, changeDate)
+
+  }
+
+  if (data === 'calculator') {
+
+    await bot.sendSticker(chatId, "https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/5.webp")
+    return await bot.sendMessage(chatId, "Well this section is not ready yet")
+
+  }
+
   if (data === 'delete') {
+
     return await bot.deleteMessage(chatId, messageId)
   }
 
