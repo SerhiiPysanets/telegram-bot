@@ -121,20 +121,21 @@ bot.on('callback_query', async(msg) => {
   const chatId = msg.message.chat.id
   const messageId = msg.message.message_id
   const { text } = msg.message
+  const regexp = /^[a-z]$/
 
   const stringToObjSudstrings = (string) => {
     const str = string.split('-')
-    const year = string.slice(0,10)
+    const date = string.slice(0,10)
     return {
       currency1: str[2]?.slice(3).trim().toLowerCase(),
       currency2: str[3].trim().split(':')[0].toLowerCase(),
-      date: year
+      date
     }
   }
 
   console.log(msg)
 
-  if (data.length < 2) {
+  if (regexp.test(data)) {
     const listCode = listCodeCurrencies.reduce((acc, rec) => {
       if (rec[0] === data) {
         return acc + `/${rec} --- ${getListCodeCurrencies[rec]} \n`
