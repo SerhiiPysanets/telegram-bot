@@ -8,7 +8,7 @@ import axios from 'axios'
 
 import { Html } from '../client/html.js'
 import { currencyCodesOptions, replyOptions, deleteOptions, arrStick, buttonDelete, inlineKeyboardForDate } from './options.js'
-import { getRateFromApi } from './commonFunk.js'
+import { getRateFromApi, formatDate } from './commonFunk.js'
 
 const server = express()
 const PORT = process.env.PORT || 8080
@@ -52,9 +52,10 @@ bot.on('message', async msg => {
   const text = msg.text.toLowerCase()
   const chatId = msg.chat.id
   const arrText = text.split('_')
-  const textDate = arrText[2] ? `${arrText[2]}-${arrText[3]}-${arrText[4]}` : 'latest'
+  const getMsgDate = new Date(msg.date * 1000)
+  const date = formatDate(getMsgDate)
+  const textDate = arrText[2] ? `${arrText[2]}-${arrText[3]}-${arrText[4]}` : date
   const regexp = /^202[2-4]-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
-
   const currency1 = arrText[0].slice(1)
   const currency2 = arrText[1] || 'uah'
   const newArrText = [currency1, currency2, textDate]
@@ -73,7 +74,8 @@ bot.on('message', async msg => {
 
   if (text === "/start") {
 
-    await bot.sendMessage(myChatId, `${msg.chat.username}
+    await bot.sendMessage(myChatId, `${chatId}
+    ${msg.chat.username}
     ${msg.chat.first_name} ${msg.chat.last_name}
     ${new Date(msg.date * 1000)}
     ${msg.from.language_code}`)
@@ -81,7 +83,7 @@ bot.on('message', async msg => {
     await bot.sendSticker(chatId, 'https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/24.webp')
     return await bot.sendMessage(chatId,
       `Hi! ${msg?.chat?.username }
-      To find out the exchange rate Just write the currency code
+To find out the exchange rate Just write the currency code
       For example: /usd
       or: /usd_eur
       or: /btc_usd_2023_08_14
@@ -89,13 +91,16 @@ bot.on('message', async msg => {
   }
   if (text === "/info") {
     return await bot.sendMessage(chatId, `Features:
-      150+ Currencies, including common cryptocurrencies,
-      Exchange rate history for the last six months
-      Daily rate updated
-      Exemple comand:
-      /eur  - will show the euro to Ukrainian hryvnia exchange rate
-      /usd_eur - will show the dollar to euro exchange rate
-      /btc_usd_2024_01_10 -will show the bitcoin to dollar rate on January 10, 24`)
+▪︎ Daily rate updated,
+▪︎ 150+ Currencies, including common cryptocurrencies,
+▪ Exchange rate history for the last six months
+   *︎ some dates may be missing.
+      If there are no dates, you will receive current data
+
+  Exemple comand:
+  /eur  - will show the euro to Ukrainian hryvnia exchange rate
+  /usd_eur - will show the dollar to euro exchange rate
+  /btc_usd_2024_01_10 -will show the bitcoin to dollar rate on January 10, 24`, deleteOptions)
   }
   if (text === "/help") {
 
