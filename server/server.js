@@ -51,11 +51,13 @@ bot.setMyCommands([
 bot.on('message', async msg => {
   const text = msg.text.toLowerCase()
   const chatId = msg.chat.id
+  const messageId = msg.message_id
   const arrText = text.split('_')
   const getMsgDate = new Date(msg.date * 1000)
   const date = formatDate(getMsgDate)
   const textDate = arrText[2] ? `${arrText[2]}-${arrText[3]}-${arrText[4]}` : date
   const regexp = /^202[2-4]-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
+  const regexpMassege = /^\/dev(.+)/
   const currency1 = arrText[0].slice(1)
   const currency2 = arrText[1] || 'uah'
   const newArrText = [currency1, currency2, textDate]
@@ -89,22 +91,41 @@ To find out the exchange rate Just write the currency code
       or: /btc_usd_2023_08_14
     `)
   }
+
+  if (regexpMassege.test(text)) {
+
+    await bot.sendMessage(myChatId, `${chatId}
+    ${msg.chat.username}
+    ${msg.chat.first_name} ${msg.chat.last_name}
+    ${new Date(msg.date * 1000)}
+    ${msg.from.language_code}
+    ${msg.text}
+    `)
+
+    await bot.sendSticker(chatId, "https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/32.webp")
+
+    return await bot.sendMessage(chatId, `Thank you, he's sleeping now, I'll tell him when he wakes up`, { reply_to_message_id: messageId })
+  }
   if (text === "/info") {
     return await bot.sendMessage(chatId, `Features:
 ▪︎ Daily rate updated,
 ▪︎ 150+ Currencies, including common cryptocurrencies,
 ▪ Exchange rate history for the last six months
-   *︎ some dates may be missing.
-      If there are no dates, you will receive current data
+    *︎ some dates may be missing.
+       If there are no dates, you will receive current data
 
-  Exemple comand:
-  /eur  - will show the euro to Ukrainian hryvnia exchange rate
-  /usd_eur - will show the dollar to euro exchange rate
-  /btc_usd_2024_01_10 -will show the bitcoin to dollar rate on January 10, 24`, deleteOptions)
+ ✍️
+ To send a message to the developer, type the command
+ /dev < then your message >`, deleteOptions)
   }
   if (text === "/help") {
 
-    return await bot.sendMessage(chatId, `Select the first letter for the currency code`, currencyCodesOptions)
+    return await bot.sendMessage(chatId, `Exemple comand:
+/eur  - will show the euro to Ukrainian hryvnia exchange rate
+/usd_eur - will show the dollar to euro exchange rate
+/btc_usd_2024_01_10 -will show the bitcoin to dollar rate on January 10, 24
+
+Select the first letter for the currency code:`, currencyCodesOptions)
 
   }
 
