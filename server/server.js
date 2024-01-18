@@ -127,7 +127,11 @@ bot.on('callback_query', async(msg) => {
   const messageId = msg.message.message_id
   const { text } = msg.message
   const { date } = msg.message
+
   const currentDate = new Date(date * 1000)
+  const currentYear = currentDate.getFullYear()
+  const currentMonth = currentDate.getMonth() + 1
+  const currentDay = currentDate.getDate()
 
   const regexp = /^[a-z]$/
   const regexpYear = /^\d{4}$/
@@ -144,7 +148,7 @@ bot.on('callback_query', async(msg) => {
     }
   }
 
-  console.log(msg, currentDate)
+  // console.log(msg)
 
   if (regexp.test(data)) {
 
@@ -167,12 +171,11 @@ bot.on('callback_query', async(msg) => {
 
   if (data === 'change_date') {
 
-    const currentYear = currentDate.getFullYear()
     const option = {
       reply_markup: JSON.stringify({
         inline_keyboard: [
           [{ text: `${currentYear - 1}`, callback_data: `${currentYear - 1}` },
-            { text: `${currentYear}`, callback_data: `${currentYear}` }],
+           { text: `${currentYear}`, callback_data: `${currentYear}` }],
           buttonDelete
         ]
       })
@@ -182,7 +185,9 @@ bot.on('callback_query', async(msg) => {
 
   if (regexpYear.test(data)) {
 
-    const keyboard = inlineKeyboardForDate(12,4,'m')
+    const numberOfMonths = (data != currentYear ? 12 : currentMonth)
+
+    const keyboard = inlineKeyboardForDate(numberOfMonths,4,'m')
 
     const optionChoseMonth = {
 
@@ -216,8 +221,8 @@ Select month`, { reply_to_message_id: msg.message.reply_to_message.message_id, .
       "11m": 30,
       "12m": 31
     }
-
-    const keyboard = inlineKeyboardForDate(daysInMonth[data], 7)
+    const numberOfDay = currentYear == year ? currentDay : daysInMonth[data]
+    const keyboard = inlineKeyboardForDate(numberOfDay, 7)
 
     const optionChoseDay = {
       reply_markup: JSON.stringify({
@@ -243,7 +248,7 @@ Select day`, { reply_to_message_id: msg.message.reply_to_message.message_id, ...
 
   if (data === 'calculator') {
 
-    await bot.sendSticker(chatId, "https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/5.webp")
+    await bot.sendSticker(chatId, "https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/13.webp")
     return await bot.sendMessage(chatId, "Well this section is not ready yet")
 
   }
