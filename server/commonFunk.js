@@ -1,6 +1,8 @@
 import axios from 'axios'
 
-const getRateFromApi = async ( newArrText ) => {
+const getRateFromApi = async (arr) => {
+
+  const newArrText = arr.map((str) => str.toLowerCase())
 
   const url = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/${newArrText[2]}/currencies/${newArrText[0]}/${newArrText[1]}.json`
   const url1 = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/${newArrText[2]}/currencies/${newArrText[0]}/${newArrText[1]}.min.json`
@@ -36,5 +38,15 @@ const formatDate = (date) => {
   return `${year}-${month}-${day}`
 }
 
+const stringToObjSudstrings = (string) => {
 
-export { getRateFromApi, formatDate }
+  const regexp = /(\d{4}-\d{2}-\d{2})|([a-z]+)|(\d.*$)/g
+
+  const [date, currency1, currency2, rate] = (string.toLowerCase().match(regexp))
+  return { date, currency1, currency2, rate }
+
+}
+
+
+
+export { getRateFromApi, formatDate, stringToObjSudstrings }

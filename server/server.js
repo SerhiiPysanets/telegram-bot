@@ -7,8 +7,18 @@ import TelegramApi from 'node-telegram-bot-api'
 import axios from 'axios'
 
 import { Html } from '../client/html.js'
-import { currencyCodesOptions, replyOptions, deleteOptions, arrStick, buttonDelete, inlineKeyboardForDate } from './options.js'
-import { getRateFromApi, formatDate } from './commonFunk.js'
+import {
+  currencyCodesOptions,
+  replyOptions,
+  deleteOptions,
+  arrStick,
+  buttonDelete,
+  inlineKeyboardForDate,
+  optionsToLocaleString,
+  optionCalculator
+} from './options.js'
+
+import { getRateFromApi, formatDate, stringToObjSudstrings } from './commonFunk.js'
 
 const server = express()
 const PORT = process.env.PORT || 8080
@@ -26,7 +36,9 @@ const myChatId = process.env.CHAT_ID
 
 const bot = new TelegramApi(token, { polling: true })
 
-const getListCodeCurrencies = await axios('https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies.min.json').then(({ data }) => {
+const url = 'https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies.min.json'
+
+const getListCodeCurrencies = await axios(url).then(({ data }) => {
   return data
 }).catch((err) => console.log(err))
 
@@ -38,7 +50,7 @@ const getRate = async (chatId, newArrText) => {
 
   return await bot.sendMessage(chatId,
     `${rate?.date}
-${newArrText[0].toUpperCase()} - ${newArrText[1].toUpperCase()}: ${rate[newArrText[1]]}`, replyOptions)
+${newArrText[0].toUpperCase()} - ${newArrText[1].toUpperCase()}: ${rate?.[newArrText[1]]}`, replyOptions)
 }
 
 bot.setMyCommands([
@@ -48,26 +60,34 @@ bot.setMyCommands([
 
 ])
 
-bot.on('message', async msg => {
+bot.on('message', async (msg) => {
   const text = msg.text.toLowerCase()
   const chatId = msg.chat.id
+  const { language_code } = msg.from
   const messageId = msg.message_id
+  const reply = msg.reply_to_message?.text
+console.log(msg)
   const arrText = text.split('_')
   const getMsgDate = new Date(msg.date * 1000)
   const date = formatDate(getMsgDate)
   const textDate = arrText[2] ? `${arrText[2]}-${arrText[3]}-${arrText[4]}` : date
+
   const regexp = /^202[2-4]-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
   const regexpMassege = /^\/dev(.+)/
-  const currency1 = arrText[0].slice(1)
+  const regexpRub = /^\/?(rub|byn|byr)/
+  const regexpAmount = /^(0[\.,]([1-9]\d*|0[1-9])|[1-9]\d*)([.,]\d\d?)?$/
+
+  const currency1 = arrText[0][0] === "/" ? arrText[0].slice(1) : arrText[0]
   const currency2 = arrText[1] || 'uah'
   const newArrText = [currency1, currency2, textDate]
 
-  if (textDate !== 'latest' && !regexp.test(textDate)) {
+  if (!regexp.test(textDate)) {
+
     await bot.sendSticker(chatId, 'https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/21.webp')
     return await bot.sendMessage(chatId, `Invalid date`)
   }
 
-  if (text === "/rub" || text === "/byn" || text === "/byr") {
+  if (regexpRub.test(text)) {
 
     const randomNumber = Math.floor(Math.random() * 10)
 
@@ -90,6 +110,23 @@ To find out the exchange rate Just write the currency code
       or: /usd_eur
       or: /btc_usd_2023_08_14
     `)
+  }
+
+  if (regexpAmount.test(text) && reply) {
+
+    const { currency1, currency2, rate } = stringToObjSudstrings(reply)
+
+    const sum = (rate * text).toLocaleString(language_code, optionsToLocaleString)
+    console.log(language_code)
+    return await bot.sendMessage(chatId, `${currency1.toUpperCase()}: ${(+text).toLocaleString(language_code, optionsToLocaleString) }
+${currency2.toUpperCase()}: ${sum}`, {...deleteOptions,
+      reply_to_message_id: messageId
+    })
+  }
+
+  if (regexpAmount.test(text)) {
+    return await bot.sendMessage(chatId, `Please,
+select your currency first`, currencyCodesOptions)
   }
 
   if (regexpMassege.test(text)) {
@@ -129,7 +166,7 @@ Select the first letter for the currency code:`, currencyCodesOptions)
 
   }
 
-  if (listCodeCurrencies.includes(newArrText[0]) && listCodeCurrencies.includes(newArrText[1]) && text[0] === "/") {
+  if (listCodeCurrencies.includes(newArrText[0]) && listCodeCurrencies.includes(newArrText[1])) {
 
     return getRate(chatId, newArrText)
 
@@ -146,6 +183,7 @@ bot.on('callback_query', async(msg) => {
   const data = msg.data
   const chatId = msg.message.chat.id
   const messageId = msg.message.message_id
+  const { language_code } = msg.from
   const { text } = msg.message
   const { date } = msg.message
 
@@ -158,18 +196,8 @@ bot.on('callback_query', async(msg) => {
   const regexpYear = /^\d{4}$/
   const regexpMonth = /^\d{2}m$/
   const regexpDay = /^\d{2}$/
+  const regexpCalculator = /^(\d|dot_)calculator$/
 
-  const stringToObjSudstrings = (string) => {
-    const str = string.split('-')
-    const date = string.slice(0,10)
-    return {
-      currency1: str[2]?.slice(3).trim().toLowerCase(),
-      currency2: str[3].trim().split(':')[0].toLowerCase(),
-      date
-    }
-  }
-
-  // console.log(msg)
 
   if (regexp.test(data)) {
 
@@ -185,7 +213,7 @@ bot.on('callback_query', async(msg) => {
 
   if (data === 'change_places') {
 
-    const { currency1, currency2, date} = stringToObjSudstrings(text)
+    const { currency1, currency2, date } = stringToObjSudstrings(text)
     const changePlace = [currency2, currency1, date]
     return getRate(chatId, changePlace)
   }
@@ -266,13 +294,26 @@ Select day`, { reply_to_message_id: msg.message.reply_to_message.message_id, ...
     return getRate(chatId, changeDate)
 
   }
+  console.log(msg)
 
   if (data === 'calculator') {
+    const { currency1, currency2, rate } = stringToObjSudstrings(text)
 
-    await bot.sendSticker(chatId, "https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/13.webp")
-    return await bot.sendMessage(chatId, "Well this section is not ready yet")
+    return await bot.sendMessage(chatId, `${currency1.toUpperCase()}: 0
+${currency2.toUpperCase()}: 0 `, { ...optionCalculator, reply_to_message_id: messageId })
+  }
+
+  if (regexpCalculator.test(data)) {
+
+      const value = data.slice(0,-10)
+
+
+    // await bot.deleteMessage(chatId, msg.message.reply_to_message.message_id)
+    return await bot.sendMessage(chatId, `${value}`, { ...optionCalculator, reply_to_message_id: msg.message.reply_to_message.message_id })
 
   }
+
+
 
   if (data === 'delete') {
 
