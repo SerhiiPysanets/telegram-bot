@@ -42,7 +42,7 @@ const stringToObjSudstrings = (string) => {
 
   const regexp = /(\d{4}-\d{2}-\d{2})|([a-z]+)|(\d.*$)/g
 
-  const [date, currency1, currency2, rate] = (string.toLowerCase().match(regexp))
+  const [date, currency1, currency2, rate] = (string?.toLowerCase().match(regexp))
   return { date, currency1, currency2, rate }
 
 }

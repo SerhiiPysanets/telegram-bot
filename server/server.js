@@ -151,6 +151,7 @@ select your currency first`, currencyCodesOptions)
 ▪ Exchange rate history for the last six months
     *︎ some dates may be missing.
        If there are no dates, you will receive current data
+▪ Added a calculator(2024-01-20)
 
  ✍️
  To send a message to the developer, type the command
@@ -199,6 +200,7 @@ bot.on('callback_query', async(msg) => {
   const regexpDay = /^\d{2}$/
   const regexpCalculator = /^(\d|\.|<)calculator$/
 
+console.log(msg)
 
   if (regexp.test(data)) {
 
@@ -221,6 +223,8 @@ bot.on('callback_query', async(msg) => {
 
   if (data === 'change_date') {
 
+   const  { currency1, currency2 } = stringToObjSudstrings(text)
+
     const option = {
       reply_markup: JSON.stringify({
         inline_keyboard: [
@@ -230,11 +234,14 @@ bot.on('callback_query', async(msg) => {
         ]
       })
     }
-    return await bot.sendMessage(chatId, 'Select year', { reply_to_message_id: messageId, ...option })
+
+    return await bot.sendMessage(chatId, `${currency1.toUpperCase()} - ${currency2.toUpperCase()}
+Select year
+      `, { reply_to_message_id: messageId, ...option })
   }
 
   if (regexpYear.test(data)) {
-
+    const [currency1, currency2] = text.match(/([A-Z]{2,})/g)
     const numberOfMonths = (data != currentYear ? 12 : currentMonth)
 
     const keyboard = inlineKeyboardForDate(numberOfMonths,4,'m')
@@ -248,13 +255,15 @@ bot.on('callback_query', async(msg) => {
 
     await bot.deleteMessage(chatId, messageId)
     return await bot.sendMessage(chatId,
-      `You chose ${data}
+      `${currency1} - ${currency2}
+You chose ${data}
 Select month`, { reply_to_message_id: msg?.message?.reply_to_message?.message_id, ...optionChoseMonth })
   }
 
   if (regexpMonth.test(data)) {
 
-    const newMessage = text.slice(0, 14)
+    const [currency1, currency2] = text.match(/([A-Z]{2,})/g)
+    const newMessage = text.slice(-28, -13)
     const year = newMessage.slice(-4)
 
     const daysInMonth = {
@@ -280,22 +289,23 @@ Select month`, { reply_to_message_id: msg?.message?.reply_to_message?.message_id
       })
     }
     await bot.deleteMessage(chatId, messageId)
-    return await bot.sendMessage(chatId, `${newMessage}-${data.slice(0,2)}
+    return await bot.sendMessage(chatId,
+      `${currency1} - ${currency2}
+${newMessage}-${data.slice(0, 2)}
 Select day`, { reply_to_message_id: msg?.message?.reply_to_message?.message_id, ...optionChoseDay })
 
   }
 
   if (regexpDay.test(data)) {
 
-    const newDate = `${text.slice(10, 17)}-${data}`
-    const { currency1, currency2 } = stringToObjSudstrings(msg?.message?.reply_to_message?.text)
-    const changeDate = [currency1, currency2, newDate]
+    const [currency1, currency2, choseDate] = text.match(/([A-Z]{2,})|(\d{4}-\d{2})/g)
+    const newDate = `${choseDate}-${data}`
+    const changeDate = [currency1.toLowerCase(), currency2.toLowerCase(), newDate]
     await bot.deleteMessage(chatId, messageId)
     await bot.sendMessage(chatId, `You changed the date to ${newDate}`, { reply_to_message_id: msg.message?.reply_to_message?.message_id})
     return getRate(chatId, changeDate)
 
   }
-  console.log(msg)
 
   if (data === 'calculator') {
     const { currency1, currency2,rate } = stringToObjSudstrings(text)
@@ -307,6 +317,7 @@ ${currency2.toUpperCase()}: ${'0'}
   }
 
   if (regexpCalculator.test(data)) {
+
     const regexpSum = /([A-Z]{2,})|(\d+[\.,]\d+[e]-\d+|\d+[\.,]\d*|\d+)/g
     const num = data.slice(0, -10)
     const [rate, currency1, getValue1, currency2] = text.match(regexpSum)
@@ -332,11 +343,7 @@ ${currency2}: ${value2}
         ...optionCalculator
       })
     }
-
-
   }
-
-
 
   if (data === 'delete') {
 
