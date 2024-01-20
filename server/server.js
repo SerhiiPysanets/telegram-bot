@@ -75,7 +75,7 @@ console.log(msg)
   const regexp = /^202[2-4]-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
   const regexpMassege = /^\/dev(.+)/
   const regexpRub = /^\/?(rub|byn|byr)/
-  const regexpAmount = /^(0[\.,]([1-9]\d*|0[1-9])|[1-9]\d*)([.,]\d\d?)?$/
+  const regexpAmount = /^(0[\.,]([1-9]\d*|0+[1-9])+|[1-9]\d*)([.,]\d\d?)?$/
 
   const currency1 = arrText[0][0] === "/" ? arrText[0].slice(1) : arrText[0]
   const currency2 = arrText[1] || 'uah'
@@ -116,10 +116,11 @@ To find out the exchange rate Just write the currency code
 
     const { currency1, currency2, rate } = stringToObjSudstrings(reply)
 
-    const sum = (rate * text).toLocaleString(language_code, optionsToLocaleString)
-    console.log(language_code)
+    const sum = (rate * text)
+    const sumFormat = rate.includes("0.00") || rate.includes("e-") ? sum : sum.toLocaleString(language_code, optionsToLocaleString)
+
     return await bot.sendMessage(chatId, `${currency1.toUpperCase()}: ${(+text).toLocaleString(language_code, optionsToLocaleString) }
-${currency2.toUpperCase()}: ${sum}`, {...deleteOptions,
+${currency2.toUpperCase()}: ${sumFormat}`, {...deleteOptions,
       reply_to_message_id: messageId
     })
   }
