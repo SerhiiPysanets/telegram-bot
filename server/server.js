@@ -307,7 +307,7 @@ ${currency2.toUpperCase()}: ${'0'}
   }
 
   if (regexpCalculator.test(data)) {
-    const regexpSum = /([A-Z]{2,})|(\d+[\.,]\d*|\d+)/g
+    const regexpSum = /([A-Z]{2,})|(\d+[\.,]\d+[e]-\d+|\d+[\.,]\d*|\d+)/g
     const num = data.slice(0, -10)
     const [rate, currency1, getValue1, currency2] = text.match(regexpSum)
 
