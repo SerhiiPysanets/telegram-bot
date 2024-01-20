@@ -164,6 +164,12 @@ select your currency first`, currencyCodesOptions)
 /usd_eur - will show the dollar to euro exchange rate
 /btc_usd_2024_01_10 -will show the bitcoin to dollar rate on January 10, 24
 
+Calculator:
+Can be used in two ways:
+    1. Using buttons
+    2. Reply to a message with the exchange rate with any number
+
+
 Select the first letter for the currency code:`, currencyCodesOptions)
 
   }
