@@ -180,12 +180,13 @@ Select the first letter for the currency code
 })
 
 bot.on('callback_query', async(msg) => {
-  const data = msg.data
-  const chatId = msg.message.chat.id
-  const messageId = msg.message.message_id
-  const { language_code } = msg.from
-  const { text } = msg.message
-  const { date } = msg.message
+  const data = msg?.data
+  const chatId = msg?.message?.chat?.id
+  const messageId = msg?.message?.message_id
+  const { language_code } = msg?.from
+  const { text } = msg?.message
+  const { date } = msg?.message
+  const reply = msg?.message?.reply_to_message?.text
 
   const currentDate = new Date(date * 1000)
   const currentYear = currentDate.getFullYear()
@@ -196,7 +197,7 @@ bot.on('callback_query', async(msg) => {
   const regexpYear = /^\d{4}$/
   const regexpMonth = /^\d{2}m$/
   const regexpDay = /^\d{2}$/
-  const regexpCalculator = /^(\d|dot_)calculator$/
+  const regexpCalculator = /^(\d|\.)calculator$/
 
 
   if (regexp.test(data)) {
@@ -248,7 +249,7 @@ bot.on('callback_query', async(msg) => {
     await bot.deleteMessage(chatId, messageId)
     return await bot.sendMessage(chatId,
       `You chose ${data}
-Select month`, { reply_to_message_id: msg.message.reply_to_message.message_id, ...optionChoseMonth })
+Select month`, { reply_to_message_id: msg?.message?.reply_to_message?.message_id, ...optionChoseMonth })
   }
 
   if (regexpMonth.test(data)) {
@@ -280,37 +281,51 @@ Select month`, { reply_to_message_id: msg.message.reply_to_message.message_id, .
     }
     await bot.deleteMessage(chatId, messageId)
     return await bot.sendMessage(chatId, `${newMessage}-${data.slice(0,2)}
-Select day`, { reply_to_message_id: msg.message.reply_to_message.message_id, ...optionChoseDay })
+Select day`, { reply_to_message_id: msg?.message?.reply_to_message?.message_id, ...optionChoseDay })
 
   }
 
   if (regexpDay.test(data)) {
 
     const newDate = `${text.slice(10, 17)}-${data}`
-    const { currency1, currency2 } = stringToObjSudstrings(msg.message.reply_to_message.text)
+    const { currency1, currency2 } = stringToObjSudstrings(msg?.message?.reply_to_message?.text)
     const changeDate = [currency1, currency2, newDate]
     await bot.deleteMessage(chatId, messageId)
-    await bot.sendMessage(chatId, `You changed the date to ${newDate}`, { reply_to_message_id: msg.message.reply_to_message.message_id})
+    await bot.sendMessage(chatId, `You changed the date to ${newDate}`, { reply_to_message_id: msg.message?.reply_to_message?.message_id})
     return getRate(chatId, changeDate)
 
   }
   console.log(msg)
 
   if (data === 'calculator') {
-    const { currency1, currency2, rate } = stringToObjSudstrings(text)
+    const { currency1, currency2,rate } = stringToObjSudstrings(text)
 
-    return await bot.sendMessage(chatId, `${currency1.toUpperCase()}: 0
-${currency2.toUpperCase()}: 0 `, { ...optionCalculator, reply_to_message_id: messageId })
+    return await bot.sendMessage(chatId, `Rate: ${rate}
+${currency1.toUpperCase()}: ${'0'}
+${currency2.toUpperCase()}: ${'0'}
+`, { ...optionCalculator, reply_to_message_id: messageId })
   }
 
   if (regexpCalculator.test(data)) {
+    const regexpSum = /([A-Z]{2,})|(\d+[\.,]\d*|\d+)/g
+    const num = data.slice(0, -10)
+    const [rate, currency1, getValue1, currency2] = text.match(regexpSum)
+    const newVelue1 = getValue1 + num
+    const newVelue2 = rate * (+newVelue1)
+    const value1 = (num === "." || num === "0") ? newVelue1 : +newVelue1
+    const value2 = rate.includes("0.00") || rate.includes("e-") ? newVelue2 : newVelue2.toLocaleString(language_code, optionsToLocaleString)
 
-      const value = data.slice(0,-10)
+      // .toLocaleString(language_code, optionsToLocaleString)
+    console.log("amount:", getValue1)
 
-
-    // await bot.deleteMessage(chatId, msg.message.reply_to_message.message_id)
-    return await bot.sendMessage(chatId, `${value}`, { ...optionCalculator, reply_to_message_id: msg.message.reply_to_message.message_id })
-
+    return await bot.editMessageText(`Rate: ${rate}
+${currency1}: ${value1}
+${currency2}: ${value2}
+    `, {
+      chat_id: chatId,
+      message_id: messageId,
+      ...optionCalculator
+    })
   }
 
 
@@ -320,7 +335,7 @@ ${currency2.toUpperCase()}: 0 `, { ...optionCalculator, reply_to_message_id: mes
     return await bot.deleteMessage(chatId, messageId)
   }
 
-  return await bot.sendMessage(chatId, `${data}`, deleteOptions)
+  return await bot.sendMessage(chatId, `${data.slice(0, -10) }`, deleteOptions)
 })
 
 middlewere.forEach((it) => server.use(it))

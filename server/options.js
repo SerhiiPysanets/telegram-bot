@@ -18,7 +18,7 @@ const replyOptions = {
 
   reply_markup: JSON.stringify({
     inline_keyboard: [
-      [{ text: "💱 ", callback_data: "change_places" }, { text: "📆", callback_data: "change_date" }, { text: "🧮", callback_data: "calculator" }],
+      [{ text: "💱 ", callback_data: "change_places" }, { text: "📆", callback_data: "change_date" }, { text: "🧮", callback_data: "calculator" }]
     ],
   })
 }
@@ -27,12 +27,12 @@ const optionCalculator = {
 
   reply_markup: JSON.stringify({
     inline_keyboard: [
-      [{ text: "⚒︎ Exchange rate calculator ⚒︎ ", callback_data: "Exchange rate calculator" }],
+      [{ text: "⚒︎  Reset xchange rate calculator  ⚒︎", callback_data: "reset_calculator" }],
       [{ text: "1", callback_data: "1calculator" }, { text: "2", callback_data: "2calculator" }, { text: "3", callback_data: "3calculator" }],
       [{ text: "4", callback_data: "4calculator" }, { text: "5", callback_data: "5calculator" }, { text: "6", callback_data: "6calculator" }],
       [{ text: "7", callback_data: "7calculator" }, { text: "8", callback_data: "8calculator" }, { text: "9", callback_data: "9calculator" }],
       [{ text: "0", callback_data: "0calculator" }],
-      [{ text: ".", callback_data: "dot_calculator" }, { text: "C", callback_data: "*c" }],
+      [{ text: ".", callback_data: ".calculator" }, { text: "<", callback_data: "back_calculator" }],
       buttonDelete
 
     ]
