@@ -66,7 +66,6 @@ bot.on('message', async (msg) => {
   const { language_code } = msg.from
   const messageId = msg.message_id
   const reply = msg.reply_to_message?.text
-console.log(msg)
   const arrText = text.split('_')
   const getMsgDate = new Date(msg.date * 1000)
   const date = formatDate(getMsgDate)
@@ -75,7 +74,7 @@ console.log(msg)
   const regexp = /^202[2-4]-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
   const regexpMassege = /^\/dev(.+)/
   const regexpRub = /^\/?(rub|byn|byr)/
-  const regexpAmount = /^(0[\.,]([1-9]\d*|0+[1-9])+|[1-9]\d*)([.,]\d\d?)?$/
+  const regexpAmount = /^(0[\.,]([1-9]\d*|0+[1-9])+|[1-9]\d*)([.,]\d+)?$/
 
   const currency1 = arrText[0][0] === "/" ? arrText[0].slice(1) : arrText[0]
   const currency2 = arrText[1] || 'uah'
@@ -115,11 +114,12 @@ To find out the exchange rate Just write the currency code
   if (regexpAmount.test(text) && reply) {
 
     const { currency1, currency2, rate } = stringToObjSudstrings(reply)
-
-    const sum = (rate * text)
+    const textReplaceComma = text.replace(',', '.')
+    const sum = (rate * textReplaceComma)
     const sumFormat = rate.includes("0.00") || rate.includes("e-") ? sum : sum.toLocaleString(language_code, optionsToLocaleString)
+    const textFormat = textReplaceComma.includes("0.00") ? (+textReplaceComma) : (+textReplaceComma).toLocaleString(language_code, optionsToLocaleString)
 
-    return await bot.sendMessage(chatId, `${currency1.toUpperCase()}: ${(+text).toLocaleString(language_code, optionsToLocaleString) }
+    return await bot.sendMessage(chatId, `${currency1.toUpperCase()}: ${textFormat}
 ${currency2.toUpperCase()}: ${sumFormat}`, {...deleteOptions,
       reply_to_message_id: messageId
     })
@@ -151,7 +151,11 @@ select your currency first`, currencyCodesOptions)
 ▪ Exchange rate history for the last six months
     *︎ some dates may be missing.
        If there are no dates, you will receive current data
-▪ Added a calculator(2024-01-20)
+▪ Added a calculator.
+    Can be used in two ways:
+      1. Using buttons
+      2. Reply to a message with the exchange rate with any number
+
 
  ✍️
  To send a message to the developer, type the command
@@ -163,12 +167,6 @@ select your currency first`, currencyCodesOptions)
 /eur  - will show the euro to Ukrainian hryvnia exchange rate
 /usd_eur - will show the dollar to euro exchange rate
 /btc_usd_2024_01_10 -will show the bitcoin to dollar rate on January 10, 24
-
-Calculator:
-Can be used in two ways:
-    1. Using buttons
-    2. Reply to a message with the exchange rate with any number
-
 
 Select the first letter for the currency code:`, currencyCodesOptions)
 
@@ -205,8 +203,6 @@ bot.on('callback_query', async(msg) => {
   const regexpMonth = /^\d{2}m$/
   const regexpDay = /^\d{2}$/
   const regexpCalculator = /^(\d|\.|<)calculator$/
-
-console.log(msg)
 
   if (regexp.test(data)) {
 
@@ -299,7 +295,6 @@ Select month`, { reply_to_message_id: msg?.message?.reply_to_message?.message_id
       `${currency1} - ${currency2}
 ${newMessage}-${data.slice(0, 2)}
 Select day`, { reply_to_message_id: msg?.message?.reply_to_message?.message_id, ...optionChoseDay })
-
   }
 
   if (regexpDay.test(data)) {
@@ -310,7 +305,6 @@ Select day`, { reply_to_message_id: msg?.message?.reply_to_message?.message_id, 
     await bot.deleteMessage(chatId, messageId)
     await bot.sendMessage(chatId, `You changed the date to ${newDate}`, { reply_to_message_id: msg.message?.reply_to_message?.message_id})
     return getRate(chatId, changeDate)
-
   }
 
   if (data === 'calculator') {
