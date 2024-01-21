@@ -61,7 +61,7 @@ bot.setMyCommands([
 ])
 
 bot.on('message', async (msg) => {
-  const text = msg.text.toLowerCase()
+  const text = typeof msg.text !== "string" ? "rub" : msg.text.toLowerCase()
   const chatId = msg.chat.id
   const { language_code } = msg.from
   const messageId = msg.message_id
