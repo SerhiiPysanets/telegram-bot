@@ -18,7 +18,7 @@ import {
   optionCalculator
 } from './options.js'
 
-import { getRateFromApi, formatDate, stringToObjSudstrings } from './commonFunk.js'
+import { getRateFromApi, formatDate, stringToObjSudstrings, translator } from './common-funk.js'
 
 const server = express()
 const PORT = process.env.PORT || 8080
@@ -95,19 +95,23 @@ bot.on('message', async (msg) => {
 
   if (text === "/start") {
 
-    await bot.sendMessage(myChatId, `${chatId}
-    ${msg.chat.username}
-    ${msg.chat.first_name} ${msg.chat.last_name}
-    ${new Date(msg.date * 1000)}
-    ${msg.from.language_code}`)
+    const textStart = ['Hi', 'To find out the exchange rate Just write the currency code.', 'For example', 'or']
+    const line = await translator(textStart, language_code)
+
+    await bot.sendMessage(myChatId, `chatId: ${chatId}
+      username: ${msg.chat.username}
+      first_name: ${msg.chat.first_name}
+      last_name: ${msg.chat.last_name}
+      Date: ${new Date(msg.date * 1000)}
+      language_code : ${msg.from.language_code}`)
 
     await bot.sendSticker(chatId, 'https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/24.webp')
     return await bot.sendMessage(chatId,
-      `Hi! ${msg?.chat?.username }
-To find out the exchange rate Just write the currency code
-      For example: /usd
-      or: /usd_eur
-      or: /btc_usd_2023_08_14
+      `${line[0]}! ${msg?.chat?.username }
+${line[1]}
+      ${line[2]}: /usd
+      ${line[3]}: /usd_eur
+      ${line[3]}: /btc_usd_2023_08_14
     `)
   }
 
@@ -126,49 +130,80 @@ ${currency2.toUpperCase()}: ${sumFormat}`, {...deleteOptions,
   }
 
   if (regexpAmount.test(text)) {
-    return await bot.sendMessage(chatId, `Please,
-select your currency first`, currencyCodesOptions)
+
+    const textReplyCalculatorError = ['Please','select your currency first']
+    const line = await translator(textReplyCalculatorError, language_code)
+
+    return await bot.sendMessage(chatId, `${line[0]},
+    ${line[1]}`, currencyCodesOptions)
   }
 
   if (regexpMassege.test(text)) {
 
-    await bot.sendMessage(myChatId, `${chatId}
-    ${msg.chat.username}
-    ${msg.chat.first_name} ${msg.chat.last_name}
-    ${new Date(msg.date * 1000)}
-    ${msg.from.language_code}
-    ${msg.text}
-    `)
+    await bot.sendMessage(myChatId, `chatId: ${ chatId }
+      username: ${ msg.chat.username }
+      first_name: ${ msg.chat.first_name }
+      last_name: ${ msg.chat.last_name }
+      Date: ${ new Date(msg.date * 1000) }
+      language_code : ${ msg.from.language_code }
+      text: ${msg.text}`)
 
     await bot.sendSticker(chatId, "https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/32.webp")
 
-    return await bot.sendMessage(chatId, `Thank you, he's sleeping now, I'll tell him when he wakes up`, { reply_to_message_id: messageId })
+    const textMessageDev = ["Thank you, he's sleeping now, I'll tell him when he wakes up"]
+    const line = await translator(textMessageDev, language_code)
+
+    return await bot.sendMessage(chatId, `${line[0]}`, { reply_to_message_id: messageId })
   }
   if (text === "/info") {
-    return await bot.sendMessage(chatId, `Features:
-▪︎ Daily rate updated,
-▪︎ 150+ Currencies, including common cryptocurrencies,
-▪ Exchange rate history for the last six months
-    *︎ some dates may be missing.
-       If there are no dates, you will receive current data
-▪ Added a calculator.
-    Can be used in two ways:
-      1. Using buttons
-      2. Reply to a message with the exchange rate with any number
+
+    const textInfo = ["Features",
+      "Daily rate updated",
+      "Currencies, including common cryptocurrencies",
+      "Exchange rate history for the last six months",
+      "some dates may be missing.",
+      "If there are no dates, you will receive current data",
+      "A calculator",
+      "Can be used in two ways",
+      "Using buttons",
+      "Reply to a message with the exchange rate. Write the amount",
+      "To send a message to the developer, type the command",
+      "your message"
+    ]
+    const line = await translator(textInfo, language_code)
+
+    return await bot.sendMessage(chatId, `${line[0]}:
+▪︎ ${line[1]},
+▪︎ 150+ ${line[2]},
+▪ ${line[3]}
+    *︎ ${line[4]}
+       ${line[5]}
+▪ ${line[6]}
+      ${line[7]}:
+      1. ${line[8]}
+      2. ${line[9]}
 
 
  ✍️
- To send a message to the developer, type the command
- /dev < then your message >`, deleteOptions)
+ ${line[10]}
+ /dev < ${line[11]} >`, deleteOptions)
   }
   if (text === "/help") {
 
-    return await bot.sendMessage(chatId, `Exemple comand:
-/eur  - will show the euro to Ukrainian hryvnia exchange rate
-/usd_eur - will show the dollar to euro exchange rate
-/btc_usd_2024_01_10 -will show the bitcoin to dollar rate on January 10, 24
+    const textHelp = ["Examples command",
+      "will show the euro exchange rate",
+      "will show the dollar to euro exchange rate",
+      "will show Bitcoin dollar exchange rate on January 10, 24",
+      "Select the first letter for the currency code"
+    ]
+    const line = await translator(textHelp, language_code)
 
-Select the first letter for the currency code:`, currencyCodesOptions)
+    return await bot.sendMessage(chatId, `${line[0]}:
+/eur  - ${line[1]}
+/usd_eur -${line[2]}
+/btc_usd_2024_01_10 -${line[3]}
+
+${line[4]}:`, currencyCodesOptions)
 
   }
 
@@ -177,10 +212,11 @@ Select the first letter for the currency code:`, currencyCodesOptions)
     return getRate(chatId, newArrText)
 
   }
-
+  const textErrComand = ["Invalid command or currency code","Select the first letter for the currency code"]
+  const line = await translator(textErrComand, language_code)
   await bot.sendSticker(chatId, 'https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/19.webp')
-  return await bot.sendMessage(chatId, `Invalid command or currency code
-Select the first letter for the currency code
+  return await bot.sendMessage(chatId, `${line[0]}
+${line[1]}
   `, currencyCodesOptions)
 
 })
@@ -225,7 +261,7 @@ bot.on('callback_query', async(msg) => {
 
   if (data === 'change_date') {
 
-   const  { currency1, currency2 } = stringToObjSudstrings(text)
+    const  { currency1, currency2 } = stringToObjSudstrings(text)
 
     const option = {
       reply_markup: JSON.stringify({
@@ -236,13 +272,17 @@ bot.on('callback_query', async(msg) => {
         ]
       })
     }
+    const textSelectYear = ["Select year"]
+    const line = await translator(textSelectYear, language_code)
 
     return await bot.sendMessage(chatId, `${currency1.toUpperCase()} - ${currency2.toUpperCase()}
-Select year
-      `, { reply_to_message_id: messageId, ...option })
+${line[0]}`, { reply_to_message_id: messageId, ...option })
   }
 
   if (regexpYear.test(data)) {
+    const textSelectMonth = ["You chose", "Select month"]
+    const line = await translator(textSelectMonth, language_code)
+
     const [currency1, currency2] = text.match(/([A-Z]{2,})/g)
     const numberOfMonths = (data != currentYear ? 12 : currentMonth)
 
@@ -258,15 +298,14 @@ Select year
     await bot.deleteMessage(chatId, messageId)
     return await bot.sendMessage(chatId,
       `${currency1} - ${currency2}
-You chose ${data}
-Select month`, { reply_to_message_id: msg?.message?.reply_to_message?.message_id, ...optionChoseMonth })
+${line[0]} ${data}
+${line[1]}`, { reply_to_message_id: msg?.message?.reply_to_message?.message_id, ...optionChoseMonth })
   }
 
   if (regexpMonth.test(data)) {
 
-    const [currency1, currency2] = text.match(/([A-Z]{2,})/g)
-    const newMessage = text.slice(-28, -13)
-    const year = newMessage.slice(-4)
+    const [currency1, currency2] = text?.match(/([A-Z]{2,})/g)
+    const [year] = text?.match(/\d{4}/)
 
     const daysInMonth = {
       "01m": 31,
@@ -290,20 +329,25 @@ Select month`, { reply_to_message_id: msg?.message?.reply_to_message?.message_id
         inline_keyboard: [...keyboard, buttonDelete]
       })
     }
+    const textSelectDay = ["You chose", "Select day"]
+    const line = await translator(textSelectDay, language_code)
+
     await bot.deleteMessage(chatId, messageId)
     return await bot.sendMessage(chatId,
       `${currency1} - ${currency2}
-${newMessage}-${data.slice(0, 2)}
-Select day`, { reply_to_message_id: msg?.message?.reply_to_message?.message_id, ...optionChoseDay })
+${line[0]} ${year}-${data.slice(0, 2)}
+${line[1]}`, { reply_to_message_id: msg?.message?.reply_to_message?.message_id, ...optionChoseDay })
   }
 
   if (regexpDay.test(data)) {
+    const textChangDate = ["You changed the date to"]
+    const line = await translator(textChangDate, language_code)
 
     const [currency1, currency2, choseDate] = text.match(/([A-Z]{2,})|(\d{4}-\d{2})/g)
     const newDate = `${choseDate}-${data}`
     const changeDate = [currency1.toLowerCase(), currency2.toLowerCase(), newDate]
     await bot.deleteMessage(chatId, messageId)
-    await bot.sendMessage(chatId, `You changed the date to ${newDate}`, { reply_to_message_id: msg.message?.reply_to_message?.message_id})
+    await bot.sendMessage(chatId, `${line[0]} ${newDate}`, { reply_to_message_id: msg.message?.reply_to_message?.message_id})
     return getRate(chatId, changeDate)
   }
 
@@ -332,7 +376,6 @@ ${currency2.toUpperCase()}: ${'0'}
       const newVelue2 = rate * (+newVelue1)
       const value1 = (num === "." || num === "0") ? newVelue1 : +newVelue1
       const value2 = rate.includes("0.00") || rate.includes("e-") ? newVelue2 : newVelue2.toLocaleString(language_code, optionsToLocaleString)
-      console.log(getValue1, num, getValue1.length)
 
       return await bot.editMessageText(`Rate: ${rate}
 ${currency1}: ${value1}

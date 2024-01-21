@@ -1,4 +1,5 @@
 import axios from 'axios'
+import translate from "google-translate-api-next"
 
 const getRateFromApi = async (arr) => {
 
@@ -47,6 +48,19 @@ const stringToObjSudstrings = (string) => {
 
 }
 
+const translator = async (arrText, languageCode) => {
+
+  if (languageCode !== 'en') {
+
+    const textStartTrans = await translate(arrText, { from: 'en', to: languageCode }).then((arr) => {
+      return arr.map((obj) => obj.text)
+    }).catch((err) => console.log(err))
+
+    return textStartTrans || arrText
+  }
+  return arrText
+}
 
 
-export { getRateFromApi, formatDate, stringToObjSudstrings }
+
+export { getRateFromApi, formatDate, stringToObjSudstrings, translator }
