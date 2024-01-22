@@ -107,7 +107,7 @@ bot.on('message', async (msg) => {
 
     await bot.sendSticker(chatId, 'https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/24.webp')
     return await bot.sendMessage(chatId,
-      `${line[0]}! ${msg?.chat?.username }
+      `${line[0]}! ${msg?.chat?.username || msg?.chat?.first_name}
 ${line[1]}
       ${line[2]}: /usd
       ${line[3]}: /usd_eur
