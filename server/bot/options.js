@@ -18,7 +18,12 @@ const replyOptions = {
 
   reply_markup: JSON.stringify({
     inline_keyboard: [
-      [{ text: "💱 ", callback_data: "change_places" }, { text: "📆", callback_data: "change_date" }, { text: "🧮", callback_data: "calculator" }, { text: "🗑", callback_data: "delete" }]
+      [
+        { text: "💱 ", callback_data: "change_places" },
+        { text: "📆", callback_data: "change_date" },
+        { text: "🧮", callback_data: "calculator" },
+        { text: "🗑", callback_data: "delete" }
+      ]
     ]
   })
 }
