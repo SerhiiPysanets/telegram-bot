@@ -2,29 +2,23 @@ import TelegramApi from 'node-telegram-bot-api'
 import axios from 'axios'
 
 import { getRateFromApi, formatDate, stringToObjSudstrings, translator } from './common-funk.js'
+import { arrStick, invalidDateStick, startStick, messageDevStick, errorComandStick } from './stickers.js'
 import {
   currencyCodesOptions,
   replyOptions,
   deleteOptions,
-  arrStick,
   buttonDelete,
   inlineKeyboardForDate,
   optionsToLocaleString,
   optionCalculator
 } from './options.js'
 
+const startBot = async () => {
 
+  const token = process.env.TG_TOKEN
+  const myChatId = process.env.CHAT_ID
 
-
-const startBot = async (token, myChatId) => {
-  
   const bot = new TelegramApi(token, { polling: true })
-  const url = 'https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies.min.json'
-  const getListCodeCurrencies = await axios(url).then(({ data }) => {
-    return data
-  }).catch((err) => console.log(err))
-
-  const listCodeCurrencies = Object.keys(getListCodeCurrencies)
 
   const getRate = async (chatId, newArrText) => {
     const rate = await getRateFromApi(newArrText)
@@ -32,6 +26,13 @@ const startBot = async (token, myChatId) => {
       `${rate?.date}
 ${newArrText[0].toUpperCase()} - ${newArrText[1].toUpperCase()}: ${rate?.[newArrText[1]]}`, replyOptions)
   }
+
+  const url = 'https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies.min.json'
+  const getListCodeCurrencies = await axios(url).then(({ data }) => {
+    return data
+  }).catch((err) => console.log(err))
+
+  const listCodeCurrencies = Object.keys(getListCodeCurrencies)
 
   bot.setMyCommands([
     { command: "/start", description: "initial command" },
@@ -62,7 +63,7 @@ ${newArrText[0].toUpperCase()} - ${newArrText[1].toUpperCase()}: ${rate?.[newArr
 
     if (!regexp.test(textDate)) {
 
-      await bot.sendSticker(chatId, 'https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/21.webp')
+      await bot.sendSticker(chatId, invalidDateStick)
       return await bot.sendMessage(chatId, `Invalid date`)
     }
 
@@ -85,7 +86,7 @@ ${newArrText[0].toUpperCase()} - ${newArrText[1].toUpperCase()}: ${rate?.[newArr
       Date: ${new Date(msg.date * 1000)}
       language_code : ${msg.from.language_code}`)
 
-      await bot.sendSticker(chatId, 'https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/24.webp')
+      await bot.sendSticker(chatId, startStick)
       return await bot.sendMessage(chatId,
         `${line[0]}! ${msg?.chat?.username || msg?.chat?.first_name}
 ${line[1]}
@@ -100,8 +101,12 @@ ${line[1]}
       const { currency1, currency2, rate } = stringToObjSudstrings(reply)
       const textReplaceComma = text.replace(',', '.')
       const sum = (rate * textReplaceComma)
-      const sumFormat = rate.includes("0.00") || rate.includes("e-") ? sum : sum.toLocaleString(language_code, optionsToLocaleString)
-      const textFormat = textReplaceComma.includes("0.00") ? (+textReplaceComma) : (+textReplaceComma).toLocaleString(language_code, optionsToLocaleString)
+      const sumFormat = rate.includes("0.00") || rate.includes("e-")
+        ? sum
+        : sum.toLocaleString(language_code, optionsToLocaleString)
+      const textFormat = textReplaceComma.includes("0.00")
+        ? (+textReplaceComma)
+        : (+textReplaceComma).toLocaleString(language_code, optionsToLocaleString)
 
       return await bot.sendMessage(chatId, `${currency1.toUpperCase()}: ${textFormat}
 ${currency2.toUpperCase()}: ${sumFormat}`, {
@@ -129,7 +134,7 @@ ${currency2.toUpperCase()}: ${sumFormat}`, {
       language_code : ${msg.from.language_code}
       text: ${msg.text}`)
 
-      await bot.sendSticker(chatId, "https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/32.webp")
+      await bot.sendSticker(chatId, messageDevStick)
 
       const textMessageDev = ["Thank you, he's sleeping now, I'll tell him when he wakes up"]
       const line = await translator(textMessageDev, language_code)
@@ -195,7 +200,8 @@ ${line[4]}:`, currencyCodesOptions)
     }
     const textErrComand = ["Invalid command or currency code", "Select the first letter for the currency code"]
     const line = await translator(textErrComand, language_code)
-    await bot.sendSticker(chatId, 'https://tlgrm.eu/_/stickers/306/6e2/3066e228-42a5-31a3-8507-cf303d3e7afe/192/19.webp')
+
+    await bot.sendSticker(chatId, errorComandStick)
     return await bot.sendMessage(chatId, `${line[0]}
 ${line[1]}
   `, currencyCodesOptions)

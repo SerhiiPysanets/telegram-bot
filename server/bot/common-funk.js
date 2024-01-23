@@ -61,6 +61,4 @@ const translator = async (arrText, languageCode) => {
   return arrText
 }
 
-
-
 export { getRateFromApi, formatDate, stringToObjSudstrings, translator }

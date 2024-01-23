@@ -10,8 +10,7 @@ const server = express()
 const PORT = process.env.PORT || 8080
 const __dirname = process.cwd()
 
-const token = process.env.TG_TOKEN
-const myChatId = process.env.CHAT_ID
+
 
 const middlewere = [
   cors(),
@@ -20,9 +19,7 @@ const middlewere = [
   express.static(resolve(__dirname, 'dist'))
 ]
 
-
-
-await startBot(token, myChatId)
+await startBot()
 
 middlewere.forEach((it) => server.use(it))
 
