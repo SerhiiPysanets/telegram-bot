@@ -76,7 +76,7 @@ ${newArrText[0].toUpperCase()} - ${newArrText[1].toUpperCase()}: ${rate?.[newArr
 
     if (text === "/start") {
 
-      const textStart = ['Hi', 'To find out the exchange rate Just write the currency code.', 'For example', 'or']
+      const textStart = ['Hi', 'To find out the exchange rate Just write the currency code.', 'Or select a code from the list',]
       const line = await translator(textStart, language_code)
 
       await bot.sendMessage(myChatId, `chatId: ${chatId}
@@ -90,10 +90,7 @@ ${newArrText[0].toUpperCase()} - ${newArrText[1].toUpperCase()}: ${rate?.[newArr
       return await bot.sendMessage(chatId,
         `${line[0]}! ${msg?.chat?.username || msg?.chat?.first_name}
 ${line[1]}
-      ${line[2]}: /usd
-      ${line[3]}: /usd_eur
-      ${line[3]}: /btc_usd_2023_08_14
-    `)
+${line[2]}: /help`)
     }
 
     if (regexpAmount.test(text) && reply) {
