@@ -34,6 +34,16 @@ ${newArrText[0].toUpperCase()} - ${newArrText[1].toUpperCase()}: ${rate?.[newArr
 
   const listCodeCurrencies = Object.keys(getListCodeCurrencies)
 
+  const messageFromDev = async (myChatId, msg) => {
+    await bot.sendMessage(myChatId, `chatId: ${msg?.chat?.id}
+      username: @${msg?.chat?.username || ''}
+      first_name: ${msg?.chat?.first_name || ''}
+      last_name: ${msg?.chat?.last_name || ''}
+      Date: ${new Date(msg?.date * 1000)}
+      language_code : ${msg?.from?.language_code}
+      text: ${msg?.text}`)
+  }
+
   bot.setMyCommands([
     { command: "/start", description: "initial command" },
     { command: "/info", description: "description of capabilities" },
@@ -42,6 +52,8 @@ ${newArrText[0].toUpperCase()} - ${newArrText[1].toUpperCase()}: ${rate?.[newArr
   ])
 
   bot.on('message', async (msg) => {
+
+    console.log(msg, msg.reply_to_message?.entities)
     const text = typeof msg.text !== "string" ? "error" : msg.text.toLowerCase()
     const chatId = msg.chat.id
     const { language_code } = msg.from
@@ -78,14 +90,7 @@ ${newArrText[0].toUpperCase()} - ${newArrText[1].toUpperCase()}: ${rate?.[newArr
 
       const textStart = ['Hi', 'To find out the exchange rate Just write the currency code.', 'Or select a code from the list',]
       const line = await translator(textStart, language_code)
-
-      await bot.sendMessage(myChatId, `chatId: ${chatId}
-      username: ${msg.chat.username}
-      first_name: ${msg.chat.first_name}
-      last_name: ${msg.chat.last_name}
-      Date: ${new Date(msg.date * 1000)}
-      language_code : ${msg.from.language_code}`)
-
+      messageFromDev(myChatId,msg)
       await bot.sendSticker(chatId, startStick)
       return await bot.sendMessage(chatId,
         `${line[0]}! ${msg?.chat?.username || msg?.chat?.first_name}
@@ -123,13 +128,7 @@ ${currency2.toUpperCase()}: ${sumFormat}`, {
 
     if (regexpMassege.test(text)) {
 
-      await bot.sendMessage(myChatId, `chatId: ${chatId}
-      username: ${msg.chat.username}
-      first_name: ${msg.chat.first_name}
-      last_name: ${msg.chat.last_name}
-      Date: ${new Date(msg.date * 1000)}
-      language_code : ${msg.from.language_code}
-      text: ${msg.text}`)
+      messageFromDev(myChatId, msg)
 
       await bot.sendSticker(chatId, messageDevStick)
 
@@ -379,9 +378,6 @@ ${currency2}: ${value2}
 
     return await bot.sendMessage(chatId, `${data}`, deleteOptions)
   })
-
-
-
 
 }
 
