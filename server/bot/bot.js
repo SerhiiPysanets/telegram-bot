@@ -41,7 +41,17 @@ ${newArrText[0].toUpperCase()} - ${newArrText[1].toUpperCase()}: ${rate?.[newArr
       last_name: ${msg?.chat?.last_name || ''}
       Date: ${new Date(msg?.date * 1000)}
       language_code : ${msg?.from?.language_code}
-      text: ${msg?.text}`)
+      text: ${msg?.text}
+
+      `, {
+      reply_markup: JSON.stringify({
+        inline_keyboard: [
+          [
+            { text: "вул. І. Миколайчука, буд.1 ", url: `https://www.google.com/maps/search/${encodeURIComponent(" Ощадбанк, 58018, Чернівецька область, м.Чернівці, вул. І. Миколайчука, буд.1")}`}
+          ]
+        ]
+      })
+    })
   }
 
   bot.setMyCommands([
@@ -53,7 +63,6 @@ ${newArrText[0].toUpperCase()} - ${newArrText[1].toUpperCase()}: ${rate?.[newArr
 
   bot.on('message', async (msg) => {
 
-    console.log(msg, msg.reply_to_message?.entities)
     const text = typeof msg.text !== "string" ? "error" : msg.text.toLowerCase()
     const chatId = msg.chat.id
     const { language_code } = msg.from

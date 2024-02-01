@@ -10,8 +10,6 @@ const server = express()
 const PORT = process.env.PORT || 8080
 const __dirname = process.cwd()
 
-
-
 const middlewere = [
   cors(),
   cookieParser(),
