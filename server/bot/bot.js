@@ -24,10 +24,10 @@ const startBot = async () => {
     const rate = await getRateFromApi(newArrText)
     return await bot.sendMessage(chatId,
       `${rate?.date}
-${newArrText[0].toUpperCase()} - ${newArrText[1].toUpperCase()}: ${rate?.[newArrText[1]]}`, replyOptions)
+${newArrText[0].toUpperCase()} - ${newArrText[1].toUpperCase()}: ${rate?.[newArrText[1]][newArrText[0]]}`, replyOptions)
   }
 
-  const url = 'https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies.min.json'
+  const url = 'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies.min.json'
   const getListCodeCurrencies = await axios(url).then(({ data }) => {
     return data
   }).catch((err) => console.log(err))

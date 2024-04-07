@@ -5,11 +5,12 @@ const getRateFromApi = async (arr) => {
 
   const newArrText = arr.map((str) => str.toLowerCase())
 
-  const url = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/${newArrText[2]}/currencies/${newArrText[0]}/${newArrText[1]}.json`
-  const url1 = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/${newArrText[2]}/currencies/${newArrText[0]}/${newArrText[1]}.min.json`
-  const url2 = `https://raw.githubusercontent.com/fawazahmed0/currency-api/1/latest/currencies/${newArrText[0]}/${newArrText[1]}.min.json`
+  const url = `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@${newArrText[2]}/v1/currencies/${newArrText[1]}.json`
+  const url1 = `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@${newArrText[2]}/v1/currencies/${newArrText[1]}.min.json`
+  const url2 = `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/${newArrText[1]}.json`
 
   const res = await axios(url).then(({ data }) => {
+    console.log(data[newArrText[1]][newArrText[0]])
     return data
   }).catch((err) => console.log(err)).then((obj) => {
     if (!obj) {
