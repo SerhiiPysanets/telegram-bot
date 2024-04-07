@@ -80,7 +80,7 @@ ${newArrText[0].toUpperCase()} - ${newArrText[1].toUpperCase()}: ${rate?.[newArr
 
     const currency1 = arrText[0][0] === "/" ? arrText[0].slice(1) : arrText[0]
     const currency2 = arrText[1] || 'uah'
-    const newArrText = [currency1, currency2, textDate]
+    const newArrText = [currency2, currency1, textDate]
 
     if (!regexp.test(textDate)) {
 
@@ -298,6 +298,9 @@ ${line[1]}`, { reply_to_message_id: msg?.message?.reply_to_message?.message_id, 
 
       const [currency1, currency2] = text?.match(/([A-Z]{2,})/g)
       const [year] = text?.match(/\d{4}/)
+      const monthCurr = '0' + currentMonth + 'm'
+
+      console.log(text, currentMonth, data)
 
       const daysInMonth = {
         "01m": 31,
@@ -313,7 +316,7 @@ ${line[1]}`, { reply_to_message_id: msg?.message?.reply_to_message?.message_id, 
         "11m": 30,
         "12m": 31
       }
-      const numberOfDay = currentYear == year ? currentDay : daysInMonth[data]
+      const numberOfDay = currentYear == year && monthCurr === data ? currentDay : daysInMonth[data]
       const keyboard = inlineKeyboardForDate(numberOfDay, 7)
 
       const optionChoseDay = {
@@ -344,11 +347,11 @@ ${line[1]}`, { reply_to_message_id: msg?.message?.reply_to_message?.message_id, 
     }
 
     if (data === 'calculator') {
-      const { currency1, currency2, rate } = stringToObjSudstrings(text)
+      const { currency2, currency1, rate } = stringToObjSudstrings(text)
 
       return await bot.sendMessage(chatId, `Rate: ${rate}
-${currency1.toUpperCase()}: ${'0'}
 ${currency2.toUpperCase()}: ${'0'}
+${currency1.toUpperCase()}: ${'0'}
 `, { ...optionCalculator, reply_to_message_id: messageId })
     }
 

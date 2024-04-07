@@ -10,7 +10,6 @@ const getRateFromApi = async (arr) => {
   const url2 = `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/${newArrText[1]}.json`
 
   const res = await axios(url).then(({ data }) => {
-    console.log(data[newArrText[1]][newArrText[0]])
     return data
   }).catch((err) => console.log(err)).then((obj) => {
     if (!obj) {
