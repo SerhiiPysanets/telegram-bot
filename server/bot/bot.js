@@ -119,8 +119,8 @@ ${line[2]}: /help`)
         ? (+textReplaceComma)
         : (+textReplaceComma).toLocaleString(language_code, optionsToLocaleString)
 
-      return await bot.sendMessage(chatId, `${currency1.toUpperCase()}: ${textFormat}
-${currency2.toUpperCase()}: ${sumFormat}`, {
+      return await bot.sendMessage(chatId, `${currency2.toUpperCase()}: ${textFormat}
+${currency1.toUpperCase()}: ${sumFormat}`, {
         ...deleteOptions,
         reply_to_message_id: messageId
       })
